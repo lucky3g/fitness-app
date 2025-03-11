@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Detail - 30-Day Belly Fat Reduction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Exercise Detail</h1>
+        </header>
+
+        <div class="exercise-detail" id="exercise-detail">
+            <!-- Exercise details will be generated here by JavaScript -->
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn" id="back-btn">Back to Exercises</button>
+        </div>
+    </div>
+
+    <script src="js/exercises.js"></script>
+    <script src="js/storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get exercise ID from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const exerciseId = parseInt(urlParams.get('id')) || 1;
+            
+            // Initialize the page
+            initializeExerciseDetailPage(exerciseId);
+            
+            // Event listeners
+            document.getElementById('back-btn').addEventListener('click', function() {
+                window.history.back();
+            });
+        });
+
+        function initializeExerciseDetailPage(exerciseId) {
+            // Get exercise data
+            const exercises = StorageManager.getExercises();
+            const exercise = exercises.find(ex => ex.id === exerciseId);
+            
+            if (exercise) {
+                const exerciseDetail = document.getElementById('exercise-detail');
+                
+                exerciseDetail.innerHTML = `
+                    <div class="exercise-header">
+                        <div class="exercise-detail-icon">${exercise.name.charAt(0)}</div>
+                        <div class="exercise-detail-content">
+                            <h2>${exercise.name}</h2>
+                            <div class="exercise-detail-meta">
+                                <span>Focus: ${exercise.focusArea}</span>
+                                <span>Duration: ${exercise.duration} seconds</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="exercise-description">${exercise.description}</p>
+                    
+                    <div class="exercise-instructions">
+                        <h3>How to perform:</h3>
+                        <p>${getDetailedInstructions(exercise.name)}</p>
+                    </div>
+                    
+                    <div class="exercise-tips">
+                        <h3>Tips:</h3>
+                        <p>${getExerciseTips(exercise.name)}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getDetailedInstructions(exerciseName) {
+            // This function would provide more detailed instructions for each exercise
+            const instructions = {
+                "Crunches": "1. Lie on your back with knees bent and feet flat on the floor.\n2. Place your hands behind your head or across your chest.\n3. Curl your shoulders towards your pelvis.\n4. Hold for 1-2 seconds at the top.\n5. Lower back down with control.",
+                "Bicycle Crunch": "1. Lie on your back with hands behind your head.\n2. Lift your knees to a 90-degree angle.\n3. Bring your right elbow towards your left knee while extending your right leg.\n4. Switch sides, bringing left elbow to right knee.\n5. Continue alternating in a pedaling motion.",
+                "Russian Twist": "1. Sit on the floor with knees bent.\n2. Lean back slightly, keeping your back straight.\n3. Lift your feet slightly off the ground.\n4. Twist your torso to the right, then to the left.\n5. For added difficulty, hold a weight with both hands.",
+                "Plank": "1. Start in a push-up position, but with your weight on your forearms.\n2. Keep your body in a straight line from head to heels.\n3. Engage your core by pulling your belly button toward your spine.\n4. Hold the position without allowing your hips to sag or rise.",
+                "Mountain Climbers": "1. Start in a high plank position with arms straight.\n2. Bring your right knee toward your chest.\n3. Quickly switch, extending right leg back while bringing left knee in.\n4. Continue alternating with a running motion.",
+                "Leg Raises": "1. Lie flat on your back with legs extended.\n2. Place hands at your sides or under your lower back for support.\n3. Keeping legs straight, lift them until perpendicular to the floor.\n4. Slowly lower back down without touching the floor.\n5. Repeat the movement.",
+                "Burpees": "1. Stand with feet shoulder-width apart.\n2. Drop into a squat position and place hands on the floor.\n3. Kick feet back into a plank position.\n4. Immediately return feet to squat position.\n5. Jump up from squat position with arms overhead.",
+                "Side Plank": "1. Lie on your side with legs extended.\n2. Prop yourself up on your forearm, elbow beneath shoulder.\n3. Lift hips off the floor, creating a straight line from head to feet.\n4. Hold this position while keeping your core engaged.\n5. Switch sides and repeat.",
+                "Jumping Jacks": "1. Stand with feet together and arms at your sides.\n2. Jump up, spreading feet beyond shoulder width.\n3. Simultaneously raise arms above head.\n4. Jump again, returning to starting position.\n5. Repeat at a quick pace."
+            };
+            
+            return instructions[exerciseName] || "Detailed instructions for this exercise will be available soon.";
+        }
+
+        function getExerciseTips(exerciseName) {
+            // This function would provide helpful tips for each exercise
+            const tips = {
+                "Crunches": "Focus on using your abdominal muscles rather than your neck or shoulders. Keep movements slow and controlled.",
+                "Bicycle Crunch": "Keep your lower back pressed into the floor throughout the exercise. The slower you go, the more you'll engage your core.",
+                "Russian Twist": "For maximum benefit, keep your feet elevated throughout the exercise. The further your feet are from your body, the harder the exercise.",
+                "Plank": "Avoid arching your back or lifting your hips too high. Keep your neck in line with your spine by looking at the floor.",
+                "Mountain Climbers": "Keep your hips low and core engaged. For more intensity, increase the speed of the movement.",
+                "Leg Raises": "If the exercise is too challenging, bend your knees slightly. Focus on using your abs to lift, not your hip flexors.",
+                "Burpees": "For a modified version, step back into plank position instead of jumping. Focus on proper form rather than speed.",
+                "Side Plank": "If too difficult, bend your bottom knee for support. For more challenge, lift your top leg up during the hold.",
+                "Jumping Jacks": "Land softly by bending your knees slightly. Keep a steady rhythm for cardiovascular benefit."
+            };
+            
+            return tips[exerciseName] || "Focus on proper form and controlled movements for maximum effectiveness.";
+        }
+    </script>
+</body>
+</html>

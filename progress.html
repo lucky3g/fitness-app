@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Tracker - 30-Day Belly Fat Reduction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Your Progress</h1>
+            <p>Track your 30-day journey to a flatter stomach</p>
+        </header>
+
+        <div class="progress-stats" id="progress-stats">
+            <!-- Progress stats will be generated here by JavaScript -->
+        </div>
+
+        <div class="progress-container">
+            <h2>Progress Overview</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <p id="days-completed-text">0 days completed</p>
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn" id="back-btn">Back to Calendar</button>
+            <button class="btn" id="update-measurements-btn">Update Measurements</button>
+        </div>
+
+        <!-- Measurements Modal -->
+        <div id="measurements-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Update Your Measurements</h2>
+                <form id="measurements-form">
+                    <div class="form-group">
+                        <label for="weight">Weight (kg):</label>
+                        <input type="number" id="weight" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="waist">Waist Circumference (cm):</label>
+                        <input type="number" id="waist" step="0.1" required>
+                    </div>
+                    <button type="submit" class="btn">Save Measurements</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/exercises.js"></script>
+    <script src="js/storage.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the page
+            initializeProgressPage();
+            
+            // Event listeners
+            document.getElementById('back-btn').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+            
+            document.getElementById('update-measurements-btn').addEventListener('click', function() {
+                document.getElementById('measurements-modal').style.display = 'block';
+            });
+            
+            document.querySelector('.close').addEventListener('click', function() {
+                document.getElementById('measurements-modal').style.display = 'none';
+            });
+            
+            document.getElementById('measurements-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveMeasurements();
+            });
+            
+            // Close modal when clicking outside of it
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('measurements-modal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        function initializeProgressPage() {
+            // Get data from localStorage
+            const completedDays = StorageManager.getCompletedDays();
+            const userProgress = StorageManager.getUserProgress();
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = `${(completedDays.length / 30) * 100}%`;
+            
+            // Update days completed text
+            document.getElementById('days-completed-text').textContent = `${completedDays.length} of 30 days completed`;
+            
+            // Generate progress stats
+            const progressStats = document.getElementById('progress-stats');
+            progressStats.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${completedDays.length}</div>
+                    <div class="stat-label">Days Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${Math.round((completedDays.length / 30) * 100)}%</div>
+                    <div class="stat-label">Program Completion</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${getCurrentStreak(userProgress)}</div>
+                    <div class="stat-label">Current Streak</div>
+                </div>
+            `;
+            
+            // Add weight and waist stats if available
+            const latestMeasurement = StorageManager.getLatestMeasurement();
+            if (latestMeasurement) {
+                const weightCard = document.createElement('div');
+                weightCard.className = 'stat-card';
+                weightCard.innerHTML = `
+                    <div class="stat-value">${latestMeasurement.weight} kg</div>
+                    <div class="stat-label">Current Weight</div>
+                `;
+                
+                const waistCard = document.createElement('div');
+                waistCard.className = 'stat-card';
+                waistCard.innerHTML = `
+                    <div class="stat-value">${latestMeasurement.waist} cm</div>
+                    <div class="stat-label">Current Waist</div>
+                `;
+                
+                progressStats.appendChild(weightCard);
+                progressStats.appendChild(waistCard);
+                
+                // If we have more than one measurement, show changes
+                const firstMeasurement = StorageManager.getFirstMeasurement();
+                if (firstMeasurement && firstMeasurement.date !== latestMeasurement.date) {
+                    const weightChange = latestMeasurement.weight - firstMeasurement.weight;
+                    const waistChange = latestMeasurement.waist - firstMeasurement.waist;
+                    
+                    const weightChangeCard = document.createElement('div');
+                    weightChangeCard.className = 'stat-card';
+                    weightChangeCard.innerHTML = `
+                        <div class="stat-value" style="color: ${weightChange <= 0 ? 'green' : 'red'}">
+                            ${weightChange <= 0 ? '-' : '+'}${Math.abs(weightChange).toFixed(1)} kg
+                        </div>
+                        <div class="stat-label">Weight Change</div>
+                    `;
+                    
+                    const waistChangeCard = document.createElement('div');
+                    waistChangeCard.className = 'stat-card';
+                    waistChangeCard.innerHTML = `
+                        <div class="stat-value" style="color: ${waistChange <= 0 ? 'green' : 'red'}">
+                            ${waistChange <= 0 ? '-' : '+'}${Math.abs(waistChange).toFixed(1)} cm
+                        </div>
+                        <div class="stat-label">Waist Change</div>
+                    `;
+                    
+                    progressStats.appendChild(weightChangeCard);
+                    progressStats.appendChild(waistChangeCard);
+                }
+            }
+        }
+
+        function getCurrentStreak(userProgress) {
+            if (userProgress.length === 0) return 0;
+            
+            // Sort progress by date
+            userProgress.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let streak = 1;
+            let currentDate = new Date(userProgress[0].date);
+            
+            for (let i = 1; i < userProgress.length; i++) {
+                const prevDate = new Date(userProgress[i].date);
+                const diffDays = Math.round((currentDate - prevDate) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 1) {
+                    streak++;
+                    currentDate = prevDate;
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+
+        function saveMeasurements() {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const waist = parseFloat(document.getElementById('waist').value);
+            const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+            
+            // Save measurement
+            StorageManager.saveMeasurement({
+                date: date,
+                weight: weight,
+                waist: waist
+            });
+            
+            // Close modal and refresh page
+            document.getElementById('measurements-modal').style.display = 'none';
+            initializeProgressPage();
+            
+            // Show success message
+            alert('Measurements saved successfully!');
+        }
+    </script>
+</body>
+</html>
